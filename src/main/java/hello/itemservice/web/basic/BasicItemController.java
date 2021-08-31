@@ -22,13 +22,16 @@ public class BasicItemController {
     @GetMapping
     public String items(Model model) {
         List<Item> items = itemRepository.findAll();
+
         model.addAttribute("items", items);
+
         return "basic/items";
     }
 
     @GetMapping("/{ItemId}")
     public String item(@PathVariable long ItemId, Model model) {
         Item findItem = itemRepository.findById(ItemId);
+
         model.addAttribute("item", findItem);
 
         return "basic/item";
@@ -40,15 +43,33 @@ public class BasicItemController {
     }
 
     @PostMapping("/add")
-    public String save(@ModelAttribute Item item) {
+    public String add(@ModelAttribute Item item) {
         Item savedItem = itemRepository.save(item);
 
-        log.info("saved item = {} ", item);
+        log.info("add item = {} ", item);
 
-        return "basic/addForm";
+        return "redirect:/basic/items/" + savedItem.getId();
     }
 
+    @GetMapping("/{itemId}/edit")
+    public String editForm(@PathVariable long itemId, Model model) {
+        Item findItem = itemRepository.findById(itemId);
+        if(findItem == null) {
+            throw new IllegalArgumentException("not exists Item");
+        }
 
+        model.addAttribute("item", findItem);
+
+        return "basic/editForm";
+    }
+
+    @PostMapping("/{itemId}/edit")
+    public String edit(@PathVariable long itemId, @ModelAttribute Item item) {
+
+        itemRepository.update(itemId, item);
+
+        return "redirect:/basic/items/{itemId}";
+    }
 
     @PostConstruct
     public void init() {
